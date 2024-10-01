@@ -1,7 +1,7 @@
 package ai.shreds.application.services;
 
-import ai.shreds.adapter.primary.SharedFetchLeadRequestParams;
-import ai.shreds.adapter.primary.SharedApiResponse;
+import ai.shreds.shared.SharedFetchLeadRequestParams;
+import ai.shreds.shared.SharedApiResponse;
 import ai.shreds.application.ports.ApplicationFetchLeadInputPort;
 import ai.shreds.application.ports.ApplicationExternalApiPort;
 import ai.shreds.application.ports.ApplicationSecurityServicePort;

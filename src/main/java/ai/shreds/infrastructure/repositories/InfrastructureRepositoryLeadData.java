@@ -80,4 +80,24 @@ public class InfrastructureRepositoryLeadData implements DomainLeadRepositoryPor
             throw e;
         }
     }
+
+    @Override
+    public void updateLead(DomainLeadEntity lead) {
+        try {
+            DomainLeadEntity existingLead = findLeadById(lead.getId());
+            if (existingLead != null) {
+                entityManager.merge(lead);
+                logger.info("Lead updated successfully: {}", lead);
+            } else {
+                logger.warn("Lead not found for update: {}", lead.getId());
+                throw new EntityNotFoundException("Lead not found for update: " + lead.getId());
+            }
+        } catch (EntityNotFoundException e) {
+            logger.warn("Lead not found for update: {}", lead.getId(), e);
+            throw e;
+        } catch (Exception e) {
+            logger.error("Error updating lead: {}", lead, e);
+            throw e;
+        }
+    }
 }

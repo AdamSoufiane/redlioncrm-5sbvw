@@ -1,4 +1,3 @@
-
 package ai.shreds.domain.services;
 
 import ai.shreds.domain.entities.DomainLeadEntity;

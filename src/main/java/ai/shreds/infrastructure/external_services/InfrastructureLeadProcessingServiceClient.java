@@ -4,10 +4,8 @@ import ai.shreds.domain.entities.DomainLeadEntity;
 import ai.shreds.domain.ports.DomainLeadProcessingPort;
 import ai.shreds.infrastructure.logging.InfrastructureLogger;
 import ai.shreds.infrastructure.exceptions.InfrastructureException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import javax.annotation.Nonnull;
-import javax.validation.constraints.NotNull;
+lombok.RequiredArgsConstructor;
+lombok.extern.slf4j.Slf4j;
 
 /**
  * InfrastructureLeadProcessingServiceClient class implements the DomainLeadProcessingPort interface.
@@ -25,7 +23,7 @@ public class InfrastructureLeadProcessingServiceClient implements DomainLeadProc
      * @param lead the lead entity to be processed
      */
     @Override
-    public void processLead(@Nonnull @NotNull DomainLeadEntity lead) {
+    public void processLead(DomainLeadEntity lead) {
         try {
             // Processing logic could involve calling external services, applying business rules, etc.
             logger.logInfo(String.format("Processing lead: %s", lead.getId()));

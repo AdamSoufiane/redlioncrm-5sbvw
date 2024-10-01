@@ -20,16 +20,3 @@ public interface ApplicationExternalApiPort {
      */
     List<SharedLeadDataDTO> fetchLeadData() throws ExternalApiException;
 }
-
-/**
- * Custom exception for handling errors related to external API interactions.
- */
-class ExternalApiException extends Exception {
-    public ExternalApiException(String message) {
-        super(message);
-    }
-
-    public ExternalApiException(String message, Throwable cause) {
-        super(message, cause);
-    }
-}

@@ -2,6 +2,7 @@ package ai.shreds.adapter.secondary;
 
 import ai.shreds.application.ports.ApplicationSecurityServicePort;
 import ai.shreds.shared.SharedLeadDataDTO;
+import ai.shreds.external.ExternalSecurityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

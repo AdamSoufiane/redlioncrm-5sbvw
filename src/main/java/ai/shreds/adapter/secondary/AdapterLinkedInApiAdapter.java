@@ -2,6 +2,7 @@ package ai.shreds.adapter.secondary;
 
 import ai.shreds.application.ports.ApplicationExternalApiPort;
 import ai.shreds.shared.SharedLeadDataDTO;
+import ai.shreds.application.ports.ExternalApiException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import okhttp3.OkHttpClient;
@@ -38,7 +39,7 @@ public class AdapterLinkedInApiAdapter implements ApplicationExternalApiPort {
     }
 
     @Override
-    public void connect() throws IOException {
+    public void connect() throws ExternalApiException {
         logger.info("Connecting to LinkedIn API using OAuth 2.0");
         RequestBody formBody = new FormBody.Builder()
             .add("grant_type", "client_credentials")
@@ -56,7 +57,7 @@ public class AdapterLinkedInApiAdapter implements ApplicationExternalApiPort {
             try (Response response = client.newCall(request).execute()) {
                 if (!response.isSuccessful()) {
                     logger.error("OAuth 2.0 authentication failed with status code: " + response.code());
-                    throw new IOException("Unexpected code " + response);
+                    throw new ExternalApiException("Unexpected code " + response);
                 }
                 String responseBody = response.body().string();
                 this.accessToken = objectMapper.readTree(responseBody).get("access_token").asText();
@@ -65,20 +66,20 @@ public class AdapterLinkedInApiAdapter implements ApplicationExternalApiPort {
                 logger.error("Error during OAuth 2.0 authentication", e);
                 retryCount++;
                 if (retryCount >= 3) {
-                    throw e;
+                    throw new ExternalApiException("Error during OAuth 2.0 authentication", e);
                 }
                 try {
                     Thread.sleep((long) Math.pow(2, retryCount) * 1000);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
-                    throw new IOException("Retry interrupted", ie);
+                    throw new ExternalApiException("Retry interrupted", ie);
                 }
             }
         }
     }
 
     @Override
-    public List<SharedLeadDataDTO> fetchLeadData() throws IOException {
+    public List<SharedLeadDataDTO> fetchLeadData() throws ExternalApiException {
         Request request = new Request.Builder()
             .url("https://api.linkedin.com/v2/leads")
             .build();
@@ -89,7 +90,7 @@ public class AdapterLinkedInApiAdapter implements ApplicationExternalApiPort {
                 response = client.newCall(request).execute();
                 if (!response.isSuccessful()) {
                     logger.error("API call failed with status code: " + response.code());
-                    throw new IOException("Unexpected code " + response);
+                    throw new ExternalApiException("Unexpected code " + response);
                 }
                 String responseBody = response.body().string();
                 return mapApiResponseToLeadData(responseBody);
@@ -97,13 +98,13 @@ public class AdapterLinkedInApiAdapter implements ApplicationExternalApiPort {
                 logger.error("Error fetching lead data", e);
                 retryCount++;
                 if (retryCount >= 3) {
-                    throw e;
+                    throw new ExternalApiException("Error fetching lead data", e);
                 }
                 try {
                     Thread.sleep((long) Math.pow(2, retryCount) * 1000);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
-                    throw new IOException("Retry interrupted", ie);
+                    throw new ExternalApiException("Retry interrupted", ie);
                 }
             } finally {
                 if (response != null) {
@@ -114,14 +115,14 @@ public class AdapterLinkedInApiAdapter implements ApplicationExternalApiPort {
         return new ArrayList<>();
     }
 
-    private List<SharedLeadDataDTO> mapApiResponseToLeadData(String apiResponse) throws IOException {
+    private List<SharedLeadDataDTO> mapApiResponseToLeadData(String apiResponse) throws ExternalApiException {
         List<SharedLeadDataDTO> leads = new ArrayList<>();
         try {
             leads = objectMapper.readValue(apiResponse, new TypeReference<List<SharedLeadDataDTO>>(){
             });
         } catch (Exception e) {
             logger.error("Error parsing API response", e);
-            throw new IOException("Error parsing API response", e);
+            throw new ExternalApiException("Error parsing API response", e);
         }
         return leads;
     }
