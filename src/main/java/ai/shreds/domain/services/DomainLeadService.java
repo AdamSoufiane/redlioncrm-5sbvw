@@ -5,6 +5,7 @@ import ai.shreds.domain.ports.DomainLeadRepositoryPort;
 import ai.shreds.domain.ports.DomainSecurityServicePort;
 import ai.shreds.domain.ports.DomainLeadExternalProcessingPort;
 import ai.shreds.domain.exceptions.DomainValidationException;
+import ai.shreds.infrastructure.exceptions.InfrastructureException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,12 +25,18 @@ public class DomainLeadService {
      * Processes the given lead by validating, saving, and forwarding it for further processing.
      *
      * @param lead the lead entity to be processed
+     * @throws DomainValidationException if lead validation fails
      */
-    public void processLead(DomainLeadEntity lead) {
+    public void processLead(DomainLeadEntity lead) throws DomainValidationException {
         log.info("Processing lead: {}", lead);
         if (validateLead(lead)) {
             leadRepositoryPort.saveLead(lead);
-            leadProcessingPort.processLead(lead);
+            try {
+                leadProcessingPort.processLead(lead);
+            } catch (InfrastructureException e) {
+                log.error("Error processing lead with external service: {}", e.getMessage());
+                // Handle or propagate the exception as needed
+            }
         } else {
             log.error("Lead validation failed for lead: {}", lead);
             throw new DomainValidationException("Lead validation failed for lead: " + lead.getId());

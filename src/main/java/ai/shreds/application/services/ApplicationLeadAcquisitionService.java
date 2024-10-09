@@ -8,7 +8,6 @@ import ai.shreds.application.ports.ApplicationSecurityServicePort;
 import ai.shreds.application.ports.ApplicationLeadProcessingOutputPort;
 import ai.shreds.shared.SharedLeadDataDTO;
 import ai.shreds.application.exceptions.ApplicationException;
-import ai.shreds.application.ports.ExternalApiException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -23,7 +22,7 @@ public class ApplicationLeadAcquisitionService implements ApplicationFetchLeadIn
     private final ApplicationLeadProcessingOutputPort leadProcessingOutputPort;
 
     @Override
-    public SharedApiResponse fetchLeads(SharedFetchLeadRequestParams params) throws ExternalApiException {
+    public SharedApiResponse fetchLeads(SharedFetchLeadRequestParams params) {
         try {
             log.info("Validating request parameters.");
             validateRequestParams(params);
@@ -36,6 +35,9 @@ public class ApplicationLeadAcquisitionService implements ApplicationFetchLeadIn
             return new SharedApiResponse("success", "Lead data fetching and processing initiated.");
         } catch (IllegalArgumentException e) {
             log.error("Error during lead acquisition process: {}", e.getMessage());
+            return new SharedApiResponse("error", e.getMessage());
+        } catch (ApplicationException e) {
+            log.error("Application exception during lead acquisition process: {}", e.getMessage());
             return new SharedApiResponse("error", e.getMessage());
         }
     }
@@ -50,16 +52,20 @@ public class ApplicationLeadAcquisitionService implements ApplicationFetchLeadIn
         }
     }
 
-    private List<SharedLeadDataDTO> fetchLeadsFromExternalApi() throws ExternalApiException {
-        externalApiPort.connect();
-        List<SharedLeadDataDTO> leads = externalApiPort.fetchLeadData();
-        if (leads == null || leads.isEmpty()) {
-            throw new ApplicationException("Failed to fetch leads from external API");
+    private List<SharedLeadDataDTO> fetchLeadsFromExternalApi() throws ApplicationException {
+        try {
+            externalApiPort.connect();
+            List<SharedLeadDataDTO> leads = externalApiPort.fetchLeadData();
+            if (leads == null || leads.isEmpty()) {
+                throw new ApplicationException("Failed to fetch leads from external API");
+            }
+            return leads;
+        } catch (Exception e) {
+            throw new ApplicationException("Error fetching leads from external API", e);
         }
-        return leads;
     }
 
-    private List<SharedLeadDataDTO> validateLeadData(List<SharedLeadDataDTO> leads) {
+    private List<SharedLeadDataDTO> validateLeadData(List<SharedLeadDataDTO> leads) throws ApplicationException {
         if (leads == null) {
             throw new ApplicationException("Leads list cannot be null");
         }
@@ -68,7 +74,7 @@ public class ApplicationLeadAcquisitionService implements ApplicationFetchLeadIn
                 .collect(Collectors.toList());
     }
 
-    private void forwardLeadsToProcessing(List<SharedLeadDataDTO> leads) {
+    private void forwardLeadsToProcessing(List<SharedLeadDataDTO> leads) throws ApplicationException {
         if (leads == null) {
             throw new ApplicationException("Leads list cannot be null");
         }

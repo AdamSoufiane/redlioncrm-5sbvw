@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * InfrastructureLeadProcessingServiceClient class implements the DomainLeadExternalProcessingPort interface.
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
  */
 @Slf4j
 @RequiredArgsConstructor
+@Service
 public class InfrastructureLeadProcessingServiceClient implements DomainLeadExternalProcessingPort {
 
     private final InfrastructureLogger logger;
@@ -27,9 +29,10 @@ public class InfrastructureLeadProcessingServiceClient implements DomainLeadExte
      * Processes the given lead data.
      *
      * @param lead the lead entity to be processed
+     * @throws InfrastructureException if there is an error during processing
      */
     @Override
-    public void processLead(DomainLeadEntity lead) {
+    public void processLead(DomainLeadEntity lead) throws InfrastructureException {
         try {
             // Processing logic could involve calling external services, applying business rules, etc.
             logger.logInfo(String.format("Processing lead: %s", lead.getId()));
