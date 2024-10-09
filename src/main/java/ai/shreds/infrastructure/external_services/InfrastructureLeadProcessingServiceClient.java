@@ -1,21 +1,27 @@
 package ai.shreds.infrastructure.external_services;
 
 import ai.shreds.domain.entities.DomainLeadEntity;
-import ai.shreds.domain.ports.DomainLeadProcessingPort;
+import ai.shreds.domain.ports.DomainLeadExternalProcessingPort;
 import ai.shreds.infrastructure.logging.InfrastructureLogger;
 import ai.shreds.infrastructure.exceptions.InfrastructureException;
-lombok.RequiredArgsConstructor;
-lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
- * InfrastructureLeadProcessingServiceClient class implements the DomainLeadProcessingPort interface.
+ * InfrastructureLeadProcessingServiceClient class implements the DomainLeadExternalProcessingPort interface.
  * This class is responsible for handling the processing of lead data within an external service infrastructure.
  */
 @Slf4j
 @RequiredArgsConstructor
-public class InfrastructureLeadProcessingServiceClient implements DomainLeadProcessingPort {
+public class InfrastructureLeadProcessingServiceClient implements DomainLeadExternalProcessingPort {
 
     private final InfrastructureLogger logger;
+    private final JmsTemplate jmsTemplate;
+
+    @Value("${jms.queue.destination}")
+    private String destinationQueue;
 
     /**
      * Processes the given lead data.
@@ -27,7 +33,8 @@ public class InfrastructureLeadProcessingServiceClient implements DomainLeadProc
         try {
             // Processing logic could involve calling external services, applying business rules, etc.
             logger.logInfo(String.format("Processing lead: %s", lead.getId()));
-            // More processing logic here
+            // Publish message to JMS
+            jmsTemplate.convertAndSend(destinationQueue, lead);
         } catch (IllegalArgumentException e) {
             logger.logError(String.format("Invalid argument for lead: %s, Error: %s", lead.getId(), e.getMessage()));
             throw new InfrastructureException("Invalid argument for lead", e);

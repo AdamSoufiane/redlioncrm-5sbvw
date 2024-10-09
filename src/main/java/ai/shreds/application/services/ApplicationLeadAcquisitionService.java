@@ -8,6 +8,7 @@ import ai.shreds.application.ports.ApplicationSecurityServicePort;
 import ai.shreds.application.ports.ApplicationLeadProcessingOutputPort;
 import ai.shreds.shared.SharedLeadDataDTO;
 import ai.shreds.application.exceptions.ApplicationException;
+import ai.shreds.application.ports.ExternalApiException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,7 +23,7 @@ public class ApplicationLeadAcquisitionService implements ApplicationFetchLeadIn
     private final ApplicationLeadProcessingOutputPort leadProcessingOutputPort;
 
     @Override
-    public SharedApiResponse fetchLeads(SharedFetchLeadRequestParams params) {
+    public SharedApiResponse fetchLeads(SharedFetchLeadRequestParams params) throws ExternalApiException {
         try {
             log.info("Validating request parameters.");
             validateRequestParams(params);
@@ -33,7 +34,7 @@ public class ApplicationLeadAcquisitionService implements ApplicationFetchLeadIn
             log.info("Forwarding validated leads to processing service.");
             forwardLeadsToProcessing(validatedLeads);
             return new SharedApiResponse("success", "Lead data fetching and processing initiated.");
-        } catch (IllegalArgumentException | ApplicationException e) {
+        } catch (IllegalArgumentException e) {
             log.error("Error during lead acquisition process: {}", e.getMessage());
             return new SharedApiResponse("error", e.getMessage());
         }
@@ -49,7 +50,7 @@ public class ApplicationLeadAcquisitionService implements ApplicationFetchLeadIn
         }
     }
 
-    private List<SharedLeadDataDTO> fetchLeadsFromExternalApi() {
+    private List<SharedLeadDataDTO> fetchLeadsFromExternalApi() throws ExternalApiException {
         externalApiPort.connect();
         List<SharedLeadDataDTO> leads = externalApiPort.fetchLeadData();
         if (leads == null || leads.isEmpty()) {

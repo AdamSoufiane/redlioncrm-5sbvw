@@ -3,7 +3,7 @@ package ai.shreds.domain.services;
 import ai.shreds.domain.entities.DomainLeadEntity;
 import ai.shreds.domain.ports.DomainLeadRepositoryPort;
 import ai.shreds.domain.ports.DomainSecurityServicePort;
-import ai.shreds.domain.ports.DomainLeadProcessingPort;
+import ai.shreds.domain.ports.DomainLeadExternalProcessingPort;
 import ai.shreds.domain.exceptions.DomainValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ public class DomainLeadService {
 
     private final DomainLeadRepositoryPort leadRepositoryPort;
     private final DomainSecurityServicePort securityServicePort;
-    private final DomainLeadProcessingPort leadProcessingPort;
+    private final DomainLeadExternalProcessingPort leadProcessingPort;
 
     /**
      * Processes the given lead by validating, saving, and forwarding it for further processing.
