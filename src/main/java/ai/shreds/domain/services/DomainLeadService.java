@@ -1,6 +1,7 @@
 package ai.shreds.domain.services;
 
 import ai.shreds.domain.entities.DomainLeadEntity;
+import ai.shreds.domain.ports.DomainLeadProcessingPort;
 import ai.shreds.domain.ports.DomainLeadRepositoryPort;
 import ai.shreds.domain.ports.DomainSecurityServicePort;
 import ai.shreds.domain.ports.DomainLeadExternalProcessingPort;
@@ -15,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class DomainLeadService {
+public class DomainLeadService implements DomainLeadProcessingPort {
 
     private final DomainLeadRepositoryPort leadRepositoryPort;
     private final DomainSecurityServicePort securityServicePort;
@@ -27,6 +28,7 @@ public class DomainLeadService {
      * @param lead the lead entity to be processed
      * @throws DomainValidationException if lead validation fails
      */
+    @Override
     public void processLead(DomainLeadEntity lead) throws DomainValidationException {
         log.info("Processing lead: {}", lead);
         if (validateLead(lead)) {

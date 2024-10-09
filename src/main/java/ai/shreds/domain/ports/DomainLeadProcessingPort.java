@@ -1,6 +1,7 @@
 package ai.shreds.domain.ports;
 
 import ai.shreds.domain.entities.DomainLeadEntity;
+import ai.shreds.domain.exceptions.DomainValidationException;
 
 /**
  * Interface for processing lead data within the domain layer.
@@ -13,5 +14,5 @@ public interface DomainLeadProcessingPort {
      *
      * @param lead the lead entity to process
      */
-    void processLead(DomainLeadEntity lead);
+    void processLead(DomainLeadEntity lead) throws DomainValidationException;
 }
